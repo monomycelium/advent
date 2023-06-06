@@ -1,0 +1,16 @@
+.DS_Store
+.fseventsd
+.Spotlight-V100
+
+debug/
+target/
+Cargo.lock
+
+*.o
+*.out
+*.dSYM/
+
+.vscode/
+
+zig-cache/
+zig-out/
