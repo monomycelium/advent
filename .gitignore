@@ -2,6 +2,8 @@
 .fseventsd
 .Spotlight-V100
 
+input.txt
+
 debug/
 target/
 Cargo.lock
