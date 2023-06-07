@@ -144,6 +144,8 @@ pub fn read_file(reader: anytype, allocator: *std.mem.Allocator, exec_callback: 
 
     // parse ship
     while (try reader.readUntilDelimiterOrEofAlloc(allocator.*, '\n', MAX_SHIP_LINE_LENGTH)) |line| {
+        defer allocator.free(line);
+
         if (line.len < 7) break; // too few stacks (less than two)
         if (line[1] == '1') break; // break once done parsing (`1` being from the crate index)
 
@@ -155,6 +157,8 @@ pub fn read_file(reader: anytype, allocator: *std.mem.Allocator, exec_callback: 
 
     // parse and execute instructions
     while (try reader.readUntilDelimiterOrEofAlloc(allocator.*, '\n', MAX_INSTRUCTION_LINE_LENGTH)) |line| {
+        defer allocator.free(line);
+
         const x = Instruction.parse(line) orelse continue;
 
         // try ship.exec(x);
@@ -181,6 +185,7 @@ pub fn main() !void {
 
     // prepare allocators
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
     var allocator = arena.allocator();
 
     // solve
