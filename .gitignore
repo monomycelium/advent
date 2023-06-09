@@ -3,6 +3,7 @@
 .Spotlight-V100
 
 input.txt
+test.txt
 
 debug/
 target/
@@ -14,5 +15,6 @@ Cargo.lock
 
 .vscode/
 
+build.zig
 zig-cache/
 zig-out/
