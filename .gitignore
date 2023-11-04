@@ -3,18 +3,19 @@
 .Spotlight-V100
 
 input.txt
-test.txt
+.cookie
 
 debug/
 target/
 Cargo.lock
 
 *.o
+*.so
 *.out
 *.dSYM/
+.clang-format
 
 .vscode/
 
-build.zig
 zig-cache/
 zig-out/

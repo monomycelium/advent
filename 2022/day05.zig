@@ -4,6 +4,7 @@ const SHIP = std.ArrayList(STACK);
 const CRATE_SIZE = 4;
 const MAX_SHIP_LINE_LENGTH = 1024;
 const MAX_INSTRUCTION_LINE_LENGTH = 512;
+const common = @cImport(@cInclude("common.h"));
 
 const Ship = struct {
     inner: ?SHIP,
@@ -17,9 +18,8 @@ const Ship = struct {
     pub fn new(size: usize, allocator: *std.mem.Allocator) !Ship {
         var inner = try SHIP.initCapacity(allocator.*, size);
 
-        for (0..size) |_| {
+        for (0..size) |_|
             inner.appendAssumeCapacity(STACK.init(allocator.*));
-        }
 
         return Ship{ .inner = inner };
     }
@@ -30,19 +30,16 @@ const Ship = struct {
 
     // free memory for ship
     pub fn deinit(self: *Ship) void {
-        if (self.*.inner != null) {
-            for (self.*.inner.?.items) |stack| {
-                stack.deinit();
-            }
-
-            self.*.inner.?.deinit();
+        if (self.inner) |i| {
+            for (i.items) |stack| stack.deinit();
+            i.deinit();
         }
     }
 
     pub fn push(self: *Ship, line: []const u8, allocator: *std.mem.Allocator) !void {
         // initialise new ship if ship is null
         if (!self.is_initialized()) {
-            const stacks = line.len / CRATE_SIZE + @boolToInt(line.len % CRATE_SIZE > 0);
+            const stacks = line.len / CRATE_SIZE + @intFromBool(line.len % CRATE_SIZE > 0);
             self.* = try new(stacks, allocator);
         }
 
@@ -161,45 +158,42 @@ pub fn read_file(reader: anytype, allocator: *std.mem.Allocator, exec_callback: 
 
         const x = Instruction.parse(line) orelse continue;
 
-        // try ship.exec(x);
         try exec_callback(&ship, x);
     }
 
     return try ship.top_crates(allocator);
 }
 
-pub fn main() !void {
-    if (std.os.argv.len != 2) {
-        std.log.err("usage: {s} <INPUT_FILE>", .{std.os.argv[0]});
-        std.process.exit(1);
-    }
+fn solver(buf: common.buf_t, func: *const fn (*Ship, Instruction) std.mem.Allocator.Error!void) common.buf_t {
+    var buffer: []u8 = undefined;
+    buffer.len = buf.len;
+    buffer.ptr = buf.ptr;
 
-    // open file for buffered reading
-    const path = std.mem.span(std.os.argv[1]);
-    var file = try std.fs.cwd().openFile(path, .{ .mode = .read_only });
-    defer file.close();
+    var stream = std.io.fixedBufferStream(buffer);
+    var reader = stream.reader();
+    var alloc = std.heap.raw_c_allocator;
 
-    // prepare buffered reader
-    var buf_reader = std.io.bufferedReader(file.reader());
-    var reader = buf_reader.reader();
+    var bytes: []u8 = undefined;
+    var out = common.buf_t{ .ptr = null, .len = 0 };
 
-    // prepare allocators
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-    var allocator = arena.allocator();
+    var result: STACK = read_file(reader, &alloc, func) catch |e| {
+        std.log.err("{}", .{e});
+        return out;
+    };
 
-    // solve
-    const a = try read_file(reader, &allocator, Ship.exec_a);
-    defer a.deinit();
+    result.append(0) catch return out;
+    bytes = result.toOwnedSlice() catch return out;
+    out.ptr = bytes.ptr;
+    out.len = bytes.len;
+    return out;
+}
 
-    try file.seekTo(0); // rewind file for part b
+export fn solve1(buffer: common.buf_t) callconv(.C) common.buf_t {
+    return solver(buffer, Ship.exec_a);
+}
 
-    const b = try read_file(reader, &allocator, Ship.exec_b);
-    defer b.deinit();
-
-    // print
-    const stdout = std.io.getStdOut().writer();
-    try stdout.print("part a: {s}\npart b: {s}\n", .{ a.items, b.items });
+export fn solve2(buffer: common.buf_t) callconv(.C) common.buf_t {
+    return solver(buffer, Ship.exec_b);
 }
 
 test "part one: ship push" {

@@ -1,3 +1,5 @@
+// TODO: fix segfault in Part 2.
+
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const Invalid = std.fmt.ParseIntError.InvalidCharacter;
@@ -7,7 +9,7 @@ const SPACE_TOTAL = 70000000;
 const SPACE_NEEDED = 30000000;
 const SPACE_MAX = 100000;
 
-var tree_size: usize = undefined;
+const common = @cImport(@cInclude("common.h"));
 
 const FsTree = struct {
     const Children = std.ArrayList(Item);
@@ -28,12 +30,13 @@ const FsTree = struct {
             return dir;
         }
 
-        pub fn deinit(self: *const Dir, allocator: *Allocator) void {
+        pub fn deinit(self: *Dir, allocator: *Allocator) void {
             for (self.items.items) |child|
                 child.deinit(allocator);
 
             self.items.deinit();
             allocator.destroy(self); // i am allocated!
+            self.* = undefined;
         }
 
         // returns cached or calculated size of directory recursively
@@ -47,7 +50,7 @@ const FsTree = struct {
             return self.size.?;
         }
 
-        pub fn solve(self: *Dir, condition: *const fn (usize) bool, allocator: *Allocator) !std.ArrayList(*Dir) {
+        pub fn solve(self: *const Dir, condition: *const fn (usize) bool, allocator: *Allocator) !std.ArrayList(*Dir) {
             var directories = std.ArrayList(*Dir).init(allocator.*);
 
             for (0..self.items.items.len) |i| {
@@ -62,9 +65,8 @@ const FsTree = struct {
                 grandchildren.deinit();
 
                 // add current dir if condition is met
-                if (condition(child.more.children.?.get_size())) {
-                    try directories.append(child.more.children.?);
-                }
+                if (condition(child.more.children.?.get_size()))
+                    try directories.append(child.more.children.?); // segfaults?
             }
 
             return directories;
@@ -83,7 +85,7 @@ const FsTree = struct {
         name: []const u8,
         more: ItemMore,
 
-        pub fn deinit(self: Item, allocator: *Allocator) void {
+        pub fn deinit(self: *const Item, allocator: *Allocator) void {
             allocator.free(self.name);
 
             if (self.item == .Dir)
@@ -201,7 +203,7 @@ const FsTree = struct {
     }
 
     // return total sizes of all directories that meet condition
-    pub fn solve(self: *FsTree, condition: *const fn (usize) bool) !std.ArrayList(*Dir) {
+    pub fn solve(self: *const FsTree, condition: *const fn (usize) bool) !std.ArrayList(*Dir) {
         return try self.root.solve(condition, self.allocator);
     }
 
@@ -256,57 +258,88 @@ const FsTree = struct {
     }
 };
 
-pub fn condition_a(size: usize) bool {
-    return size <= SPACE_MAX;
-}
+var tree_g: ?FsTree = null;
 
-pub fn condition_b(size: usize) bool {
-    return size >= SPACE_NEEDED - (SPACE_TOTAL - tree_size);
-}
+const Part1 = struct {
+    pub fn solve(tree: *FsTree) !usize {
+        const a = try tree.solve(Part1.condition);
+        defer a.deinit();
 
-pub fn main() !void {
-    if (std.os.argv.len != 2) {
-        std.log.err("usage: {s} <INPUT_FILE>", .{std.os.argv[0]});
-        std.process.exit(1);
+        var a_sum: usize = 0;
+        for (a.items) |i|
+            a_sum += i.size.?;
+
+        return a_sum;
     }
 
-    // open file
-    const path = std.mem.span(std.os.argv[1]);
-    var file = try std.fs.cwd().openFile(
-        path,
-        .{ .mode = .read_only },
-    );
-    defer file.close();
+    pub fn condition(size: usize) bool {
+        return size <= SPACE_MAX;
+    }
+};
 
-    // prepare buffered reader
-    var buf_reader = std.io.bufferedReader(file.reader());
-    var reader = buf_reader.reader();
+const Part2 = struct {
+    var tree_size: usize = undefined;
 
-    // prepare allocator (for tree)
-    var allocator = std.heap.c_allocator;
+    pub fn solve(tree: *FsTree) !usize {
+        Part2.tree_size = tree.get_size();
+        const b = try tree.solve(Part2.condition);
+        defer b.deinit();
 
-    // parse and solve
-    var tree: FsTree = try FsTree.parse(reader, &allocator);
-    defer tree.deinit();
-    tree_size = tree.get_size();
+        var b_sum: usize = std.math.maxInt(usize);
+        for (b.items) |item|
+            b_sum = @min(b_sum, item.size.?);
 
-    const a = try tree.solve(condition_a);
-    defer a.deinit();
-
-    var a_sum: usize = 0;
-    for (a.items) |i| {
-        a_sum += i.size.?;
+        return b_sum;
     }
 
-    const b = try tree.solve(condition_b);
-    defer b.deinit();
+    pub fn condition(size: usize) bool {
+        return size >= SPACE_NEEDED - (SPACE_TOTAL - tree_size);
+    }
+};
 
-    var b_sum: usize = b.items[0].size.?;
-    for (b.items[1..]) |item| {
-        b_sum = std.math.min(b_sum, item.size.?);
-    } // get smallest dir size
+fn solver(
+    buf: common.buf_t,
+    solve: *const fn (tree: *FsTree) @typeInfo(@typeInfo(@TypeOf(Part2.solve)).Fn.return_type.?).ErrorUnion.error_set!usize,
+) common.buf_t {
+    var buffer: []u8 = undefined;
+    buffer.len = buf.len;
+    buffer.ptr = buf.ptr;
 
-    // print
-    const stdout = std.io.getStdOut().writer();
-    try stdout.print("part a: {d}\npart b: {d}\n", .{ a_sum, b_sum });
+    var stream = std.io.fixedBufferStream(buffer);
+    var reader = stream.reader();
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    var alloc = gpa.allocator();
+
+    var bytes: []u8 = undefined;
+    var out = common.buf_t{ .ptr = null, .len = 0 };
+
+    if (tree_g == null) tree_g = FsTree.parse(reader, &alloc) catch |e| {
+        std.log.err("{}", .{e});
+        return out;
+    };
+
+    var result: usize = solve(&tree_g.?) catch return out;
+    bytes = strFromInt(result, std.heap.raw_c_allocator) catch return out;
+    out.ptr = bytes.ptr;
+    out.len = bytes.len;
+    return out;
+}
+
+export fn solve1(buf: common.buf_t) callconv(.C) common.buf_t {
+    return solver(buf, Part1.solve);
+}
+
+export fn solve2(buf: common.buf_t) callconv(.C) common.buf_t {
+    var res = solver(buf, Part2.solve);
+    tree_g.?.deinit();
+    tree_g = null;
+    return res;
+}
+
+fn strFromInt(value: anytype, allocator: std.mem.Allocator) ![]u8 {
+    var buf: []u8 = try allocator.alloc(u8, std.math.log10(std.math.maxInt(@TypeOf(value))) + 1);
+    const u: usize = std.fmt.formatIntBuf(buf, value, 10, .lower, .{ .alignment = .left });
+
+    buf[u] = 0;
+    return try allocator.realloc(buf, u + 1);
 }

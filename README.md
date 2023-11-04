@@ -1,5 +1,26 @@
 # Advent of Code Attempts
-Welcome to my repository of my attempts to solve challenges from [Advent of Code](https://adventofcode.com/)! Here, you'll find attempts written in various languages, (not yet) such as Zig, C, and Rust, that effectively solve the challenges.
+Welcome to this repository of my attempts to solve challenges from [Advent of Code](https://adventofcode.com/)!
 
-### shameful disclaimer
-As a relatively new developer, I have not gotten the chance to give a try at much challenges. But fear not, for I have been working my way through them! (As of writing, I lost solutions for three challenges thanks to a dramatic Mac that had to be restored!)
+### Project Structure
+
+In the directory for each year, there will be a source file for each day, named `YYYY/dayDD.<c|zig>`. The source file should compile to a shared object, `dayDD.so`, with the following symbols (with `buf_t` being a simple buffer type defined in `common.h`):
+``` c
+buf_t solve1(buf_t input);
+buf_t solve2(buf_t input);
+```
+
+The Makefile can compile Zig and C source files:
+``` console
+$ make 2022/day04.so
+zig build-lib  -dynamic -lc -I. 2022/day04.zig
+```
+
+The caller can solve both challenges using the input (trailing newlines should be ommited):
+``` console
+$ make caller # build the `caller` executable
+$ ./caller 2022/day04.so < /tmp/input.txt
+Part 1: 448
+Part 2: 794
+```
+
+The Zig source files are compatible with `zig version` `0.11.0`.
