@@ -1,3 +1,6 @@
+export const year: u16 = 2022;
+export const day: u8 = 6;
+
 const std = @import("std");
 
 const MAX_FILE_SIZE = 4096;

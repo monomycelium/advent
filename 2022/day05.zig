@@ -1,3 +1,6 @@
+export const year: u16 = 2022;
+export const day: u8 = 5;
+
 const std = @import("std");
 const STACK = std.ArrayList(u8);
 const SHIP = std.ArrayList(STACK);

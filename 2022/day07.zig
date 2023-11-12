@@ -1,5 +1,8 @@
 // TODO: fix segfault in Part 2.
 
+export const year: u16 = 2022;
+export const day: u8 = 7;
+
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const Invalid = std.fmt.ParseIntError.InvalidCharacter;

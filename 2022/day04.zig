@@ -1,4 +1,5 @@
-// Advent of Code 2022, Day 4
+export const year: u16 = 2022;
+export const day: u8 = 4;
 
 const std = @import("std");
 const MAX_LINE_LENGTH = 13;
