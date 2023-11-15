@@ -38,4 +38,9 @@ typedef struct day {
     void *handle;
 } day_t;
 
+bool parseargs(int argc, char **argv, app_t *app);
+char *symbol_name(part_t part);
+void usage(int code, char *arg0);
+void solve(const day_t *day, part_t part);
+
 #endif  // CALLER_H

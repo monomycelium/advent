@@ -10,120 +10,7 @@
 #include <unistd.h>
 
 #include "check.h"
-
-bool parseargs(int argc, char **argv, app_t *app) {
-    int c;
-    app_t old = *app;
-    app->parts = 0;
-
-    while ((c = getopt(argc, argv, "cui:b:p:")) != -1) switch (c) {
-            case 'c':
-                app->check ^= 1;
-                break;
-            case 'u':
-                app->uplod ^= 1;
-                break;
-            case 'b':
-                app->cooky = optarg;
-                break;
-            case 'i':
-                app->input = optarg;
-                break;
-            case 'p': {
-                unsigned char u = optarg[0] - '0';
-
-                if (u >= PART_MAX || u < PART_ONE) {
-                    fprintf(stderr, "invalid part `%s'\n", optarg);
-                    return false;
-                };
-
-                app->parts ^= 1 << (u - PART_ONE);
-                break;
-            }
-            case '?':
-            default:
-                return false;
-        }
-
-    if (optind == argc) {
-        fputs("missing argument: <SHARED_OBJ>\n", stderr);
-        return false;
-    }
-
-    app->objct = argv[optind];                    // set shared object
-    if (app->parts == 0) app->parts = old.parts;  // restore parts if unchanged
-
-    return true;
-}
-
-void usage(int code, char *arg0) {
-    fprintf(stderr, "usage: %s [OPTIONS] <SHARED_OBJ>\n", arg0);
-    fputs(
-        "  -c\t\t\tcheck answer using advent.fly.dev\n"
-        "  -u\t\t\tupload answer to adventofcode.com\n"
-        "  -p <PART: uint>\texecute PART (default: all)\n"
-        "  -i <PATH: str>\tread input from file (default: stdin)\n"
-        "  -b <PATH: str>\tcookie file (default: .cookie)\n",
-        stderr);
-    exit(code);
-}
-
-char *symbol_name(part_t part) {
-    switch (part) {
-        case PART_ONE:
-            return "solve1";
-        case PART_TWO:
-            return "solve2";
-        default:
-            return NULL;
-    }
-}
-
-buf_t read_input(FILE *restrict stream) {
-    buf_t buffer;
-    char *ptr = NULL;
-    size_t bufsiz = 0;
-
-    buffer.ptr = NULL;
-    buffer.len = 0;
-
-    // use fread(3) if stream is seekable
-    if (fseek(stream, 0L, SEEK_END) == 0) {
-        long pos;
-        size_t len;
-
-        pos = ftell(stream);
-        if (pos == -1) return buffer;
-
-        bufsiz = pos + 1;
-        ptr = malloc(bufsiz);
-        if (ptr == NULL) return buffer;
-
-        if (fseek(stream, 0L, SEEK_SET) == -1) return buffer;
-
-        len = fread(ptr, 1, pos, stream);
-        if (len != (size_t)pos && feof(stream) == 0) return buffer;
-
-        buffer.ptr = ptr;
-        buffer.len = len;
-        return buffer;
-    } else {  // or else, use getdelim(3)
-        ssize_t result;
-
-        if (errno != ESPIPE) return buffer;  // check fseek(3) error
-
-        result = getdelim(&ptr, &bufsiz, 0, stream);
-        if (result == -1) {
-            free(ptr);
-            return buffer;
-        }
-
-        buffer.len = (size_t)result;
-        buffer.ptr = realloc(ptr, buffer.len + 1);
-        if (buffer.ptr == NULL) free(ptr);
-        return buffer;
-    }
-}
+#include "input.h"
 
 void solve(const day_t *day, part_t part) {
     char *errorstr;
@@ -133,7 +20,7 @@ void solve(const day_t *day, part_t part) {
 
     symbol = dlsym(day->handle, symbol_name(part));
     if ((errorstr = dlerror()) != NULL) {
-        result.ptr = errorstr;
+        result.ptr = (uint8_t *)errorstr;
         symbol = NULL;
         goto print;
     }
@@ -225,4 +112,72 @@ die:
     fprintf(stderr, "%s\n", errorstr);
     if (day.input.ptr) free(day.input.ptr);
     return EXIT_FAILURE;
+}
+
+void usage(int code, char *arg0) {
+    fprintf(stderr, "usage: %s [OPTIONS] <SHARED_OBJ>\n", arg0);
+    fputs(
+        "  -c\t\t\tcheck answer using advent.fly.dev\n"
+        "  -u\t\t\tupload answer to adventofcode.com\n"
+        "  -p <PART: uint>\texecute PART (default: all)\n"
+        "  -i <PATH: str>\tread input from file (default: stdin)\n"
+        "  -b <PATH: str>\tcookie file (default: .cookie)\n",
+        stderr);
+    exit(code);
+}
+
+char *symbol_name(part_t part) {
+    switch (part) {
+        case PART_ONE:
+            return "solve1";
+        case PART_TWO:
+            return "solve2";
+        default:
+            return NULL;
+    }
+}
+
+bool parseargs(int argc, char **argv, app_t *app) {
+    int c;
+    app_t old = *app;
+    app->parts = 0;
+
+    while ((c = getopt(argc, argv, "cui:b:p:")) != -1) switch (c) {
+            case 'c':
+                app->check ^= 1;
+                break;
+            case 'u':
+                app->uplod ^= 1;
+                break;
+            case 'b':
+                app->cooky = optarg;
+                break;
+            case 'i':
+                app->input = optarg;
+                break;
+            case 'p': {
+                unsigned char u = optarg[0] - '0';
+
+                if (u >= PART_MAX || u < PART_ONE) {
+                    fprintf(stderr, "invalid part `%s'\n", optarg);
+                    return false;
+                };
+
+                app->parts ^= 1 << (u - PART_ONE);
+                break;
+            }
+            case '?':
+            default:
+                return false;
+        }
+
+    if (optind == argc) {
+        fputs("missing argument: <SHARED_OBJ>\n", stderr);
+        return false;
+    }
+
+    app->objct = argv[optind];                    // set shared object
+    if (app->parts == 0) app->parts = old.parts;  // restore parts if unchanged
+
+    return true;
 }

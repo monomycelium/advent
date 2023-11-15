@@ -4,7 +4,7 @@
 
 #include "list.h"
 
-static size_t write(char *ptr, size_t size, size_t nmemb, list_t *list);
+static size_t write(uint8_t *ptr, size_t size, size_t nmemb, list_t *list);
 
 res_t fetch(const char *url, const char *cookiefile, buf_t data) {
     char errbuf[CURL_ERROR_SIZE]; /**< error buffer */
@@ -70,7 +70,7 @@ defer:
     return res;
 }
 
-static size_t write(char *ptr, size_t size, size_t nmemb, list_t *list) {
+static size_t write(uint8_t *ptr, size_t size, size_t nmemb, list_t *list) {
     size_t realsize;
     realsize = size * nmemb;
 

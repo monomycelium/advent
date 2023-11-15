@@ -20,10 +20,10 @@ list_t l_init(size_t size) {
 }
 
 void l_resize(list_t *self, size_t size) {
-    char *ptr;
+    uint8_t *ptr;
     self->siz += size;
 
-    ptr = realloc(self->buf.ptr, self->siz);
+    ptr = (uint8_t *)realloc(self->buf.ptr, self->siz);
     if (ptr == NULL) {
         l_deinit(self);
         return;
@@ -72,7 +72,7 @@ buf_t l_buffer(list_t *self) {
 buf_t l_bfroms(const char *str) {
     return (buf_t){
         .len = strlen(str),
-        .ptr = (char *)str,
+        .ptr = (uint8_t *)str,
     };
 }
 

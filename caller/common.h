@@ -8,8 +8,8 @@
  * Heap-allocated buffer.
  */
 typedef struct buf {
-    size_t len; /**< Length of data. */
-    char *ptr;  /**< Pointer to null-terminated data. */
+    size_t len;   /**< Length of data. */
+    uint8_t *ptr; /**< Pointer to null-terminated data. */
 } buf_t;
 
 /**

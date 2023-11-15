@@ -3,6 +3,7 @@
 #include "check.h"
 
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -36,7 +37,7 @@ outcome_t upload(const day_t *day, part_t part, buf_t answer) {
     post.ptr = malloc(post.len);
     if (post.ptr == NULL) return INVALID;
 
-    post.len = snprintf(post.ptr, post.len, "level=%u&answer=%s",
+    post.len = snprintf((char *)post.ptr, post.len, "level=%u&answer=%s",
                         (unsigned int)part % PART_MAX, answer.ptr);
     snprintf(url, URL_LENGTH, URL_FORMAT, day->year % 10000, day->day % 100);
 
@@ -47,13 +48,13 @@ outcome_t upload(const day_t *day, part_t part, buf_t answer) {
         else
             fputs("CURL(3) failed\n", stderr);
 
-        fputs(res.buffer.ptr, stderr);
+        fputs((char *)res.buffer.ptr, stderr);
         fputc('\n', stderr);
         goto inv;
     }
 
-    // ptr = memmem(res.buffer.ptr, res.buffer.len, "<main>", 6);
-    ptr = strstr(res.buffer.ptr, "<main>");
+    ptr = memmem(res.buffer.ptr, res.buffer.len, "<main>", 6);
+    // ptr = strstr((char *)res.buffer.ptr, "<main>");
     if (ptr == NULL) goto inv;
 
     /*
@@ -66,7 +67,7 @@ outcome_t upload(const day_t *day, part_t part, buf_t answer) {
      * - You gave an answer too recently;
      */
 
-    if (res.buffer.ptr + res.buffer.len <= (19 + 7 + ptr)) goto inv;
+    if (res.buffer.ptr + res.buffer.len <= (uint8_t *)(19 + 7 + ptr)) goto inv;
 
     ptr += 19;  // skip HTML tags
     switch (ptr[7]) {
@@ -74,7 +75,8 @@ outcome_t upload(const day_t *day, part_t part, buf_t answer) {
             out = CORRECT;
             goto end;
         case 'n':
-            if (res.buffer.ptr + res.buffer.len <= (48 + ptr)) goto inv;
+            if (res.buffer.ptr + res.buffer.len <= (uint8_t *)(48 + ptr))
+                goto inv;
 
             switch (ptr[48]) {
                 case 'l':
