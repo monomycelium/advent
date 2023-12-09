@@ -2,6 +2,7 @@
 
 #include <dlfcn.h>
 #include <errno.h>
+#include <getopt.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,10 +34,10 @@ print:
     fputs("\033[90m", stdout);
 
     if (symbol != NULL) {
-        if (day->app.uplod)
-            fputs(outcome_sym[upload(day, part, result)], stdout);
-        // else if (day->app.check)
-        //     puts(outcome_sym[check(day, part, result)]);
+        if (day->app.check != LEAVE)
+            fputs(outcome_sym[(day->app.check == UPLOD ? upload : check)(
+                      day, part, result)],
+                  stdout);
 
         free(result.ptr);
     }
@@ -52,7 +53,7 @@ int main(int argc, char **argv) {
     void *ptr;      /**< temporary pointer */
 
     day.app.input = NULL;
-    day.app.check = false;
+    day.app.check = LEAVE;
     day.app.parts = 0b11;
     day.app.cooky = ".cookie";
     day.app.objct = NULL;
@@ -144,10 +145,10 @@ bool parseargs(int argc, char **argv, app_t *app) {
 
     while ((c = getopt(argc, argv, "cui:b:p:")) != -1) switch (c) {
             case 'c':
-                app->check ^= 1;
+                app->check = CHECK;
                 break;
             case 'u':
-                app->uplod ^= 1;
+                app->check = UPLOD;
                 break;
             case 'b':
                 app->cooky = optarg;

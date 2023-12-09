@@ -16,13 +16,21 @@ typedef enum part {
 } part_t;
 
 /**
+ * Check method.
+ */
+typedef enum check {
+    LEAVE, /**< none */
+    CHECK, /**< check results using advent.fly.dev */
+    UPLOD, /**< upload results to adventofcode.com */
+} check_t;
+
+/**
  * Application configuration.
  */
 typedef struct app {
-    char *input;    /**< path to input file */
-    char *cooky;    /**< path to cookie file */
-    bool check : 1; /**< check results using advent.fly.dev */
-    bool uplod : 1; /**< upload results to adventofcode.com */
+    char *input;                           /**< path to input file */
+    char *cooky;                           /**< path to cookie file */
+    check_t check;                         /**< check method */
     uint8_t parts : (PART_MAX - PART_ONE); /**< bitfield of parts to execute */
     char *objct;                           /**< path to shared object */
 } app_t;

@@ -15,10 +15,14 @@ const char *const outcome_sym[] = {
     "\xE2\x9D\x8C",      // Cross mark
     "\xE2\xAC\x87",      // Downwards arrow
     "\xE2\xAC\x86",      // Upwards arrow
-    "\xE2\x8F\xA6",      // Hourglass
+    "\xE2\x8C\x9B",      // Hourglass
     "\xF0\x9F\x9A\xA7",  // Construction sign
-    "\xE2\x9A\xA0",      // Question mark
+    "\xE2\x9A\xA0",      // Warning sign
 };
+
+outcome_t check(const day_t *day, part_t part, buf_t answer) {
+    return upload(day, part, answer); // TODO: implement check
+}
 
 outcome_t upload(const day_t *day, part_t part, buf_t answer) {
     buf_t post;           /**< POST data */

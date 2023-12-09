@@ -95,13 +95,9 @@ static buf_t bfromi(size_t i);
  */
 static std::unordered_set<Cor, Cor::Hash> solve(buf_t input, size_t n);
 
-extern "C" buf_t solve1(buf_t input) {
-    return bfromi(solve(input, 2).size());
-}
+extern "C" buf_t solve1(buf_t input) { return bfromi(solve(input, 2).size()); }
 
-extern "C" buf_t solve2(buf_t input) {
-    return bfromi(solve(input, 10).size());
-}
+extern "C" buf_t solve2(buf_t input) { return bfromi(solve(input, 10).size()); }
 
 static std::unordered_set<Cor, Cor::Hash> solve(buf_t input, size_t n) {
     std::unordered_set<Cor, Cor::Hash> unique{{0, 0}};
@@ -124,8 +120,7 @@ static std::unordered_set<Cor, Cor::Hash> solve(buf_t input, size_t n) {
                 moved = i + 1 == n;
             }
 
-            if (moved) 
-                unique.insert(knots[n - 1]);
+            if (moved) unique.insert(knots[n - 1]);
         }
 
         return true;
