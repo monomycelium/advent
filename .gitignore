@@ -20,3 +20,4 @@ Cargo.lock
 
 zig-cache/
 zig-out/
+compile_commands.json
