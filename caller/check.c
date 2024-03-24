@@ -21,7 +21,7 @@ const char *const outcome_sym[] = {
 };
 
 outcome_t check(const day_t *day, part_t part, buf_t answer) {
-    return upload(day, part, answer); // TODO: implement check
+    return upload(day, part, answer);  // TODO: implement check
 }
 
 outcome_t upload(const day_t *day, part_t part, buf_t answer) {
