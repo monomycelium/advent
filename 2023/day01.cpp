@@ -83,7 +83,7 @@ buf_t solver(buf_t input, digit_func func) {
         count++;
     }
 
-    return umax_to_string(sum);
+    return (buf_t){.len = 0, .ptr = (uint8_t *)sum};
 }
 
 extern "C" buf_t solve1(buf_t input) {
@@ -100,23 +100,4 @@ extern "C" buf_t solve2(buf_t input) {
                : one.pos < two.pos ? (x ? two.digit : one.digit)
                                    : (x ? one.digit : two.digit);
     });
-}
-
-static buf_t umax_to_string(const uintmax_t v) {
-    constexpr size_t bufsiz = std::numeric_limits<uintmax_t>::digits10 + 1;
-
-    std::to_chars_result res;
-    buf_t ret;
-    char buf[bufsiz];
-
-    res = std::to_chars(buf, buf + bufsiz, v);
-
-    ret.len = res.ptr - buf;
-    ret.ptr = (uint8_t *)malloc(ret.len + 1);
-    if (ret.ptr == NULL) return (buf_t){.len = 0, .ptr = NULL};
-
-    memcpy(ret.ptr, buf, ret.len);
-    ret.ptr[ret.len] = 0;
-
-    return ret;
 }

@@ -14,6 +14,10 @@ buf_t solve1(buf_t input); /**< Solution to Part One */
 buf_t solve2(buf_t input); /**< Solution to Part Two */
 ```
 
+Possible return values:
+- a string of characters allocated using malloc(3) and null-terminated; len indicates the number of characters and ptr contains the address of the string.
+- a `uintmax_t` number; len is set to 0 and ptr contains the number to format.
+
 The Makefile can compile Zig and C source files (with a preference for C):
 ``` console
 $ make 2022/day04.so

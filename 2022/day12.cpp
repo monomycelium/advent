@@ -122,10 +122,11 @@ extern "C" buf_t solve2(buf_t input) {
     Grid::Queue q;
 
     size_t e = d.grid.real_size();
-    for (size_t i = 0; i < e; i++) if (d.grid.grid[i] == 'a') {
-        Grid::Queue q({d.grid.at(i)});
-        min = std::min(d.bfs(q), min);
-    }
+    for (size_t i = 0; i < e; i++)
+        if (d.grid.grid[i] == 'a') {
+            Grid::Queue q({d.grid.at(i)});
+            min = std::min(d.bfs(q), min);
+        }
 
     return bfromi(min);
 }
@@ -136,8 +137,7 @@ std::size_t Data::bfs(Grid::Queue &queue) const {
     size_t count = 0;
     Grid::Visits visits(real_size, 0);
 
-    for (const Coord &c : queue)
-         visits[this->grid.index(c)] = true;
+    for (const Coord &c : queue) visits[this->grid.index(c)] = true;
 
     queue.push_back(Coord{-1, -1});
     while (queue.size() > 0) {
@@ -150,8 +150,10 @@ std::size_t Data::bfs(Grid::Queue &queue) const {
             continue;
         }
 
-        if (coord == this->end) return count;
-        else this->grid.append_neighbours(coord, queue, visits);
+        if (coord == this->end)
+            return count;
+        else
+            this->grid.append_neighbours(coord, queue, visits);
     }
 
     return (std::size_t)-1;

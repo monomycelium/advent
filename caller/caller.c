@@ -29,6 +29,19 @@ void solve(const day_t *day, part_t part) {
     func = (solve_func)symbol;
     result = func(day->input);
 
+    if (result.len == 0 && result.ptr != NULL) {
+        uintmax_t value = (uintmax_t)result.ptr;
+        result.len = (size_t)snprintf(NULL, 0, "%ju", value);
+        result.ptr = malloc(result.len + 1);
+
+        if (result.ptr == NULL) {
+            result.len = 0;
+            goto print;
+        }
+
+        snprintf((char *)result.ptr, result.len + 1, "%ju", value);
+    }
+
 print:
     printf("Part %u: %s ", (unsigned int)part, result.ptr);
     fputs("\033[90m", stdout);
