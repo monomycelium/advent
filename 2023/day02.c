@@ -138,8 +138,7 @@ void solver(buf_t input, void (*func)(Subset, void *), void *data) {
             // TODO: handle colour.
             for (col = 0; col < COLOUR_MAX &&
                           memcmp(colours[col], ptr, strlen(colours[col])) != 0;
-                 col++)
-                ;
+                 col++);
 
             assert(col != COLOUR_MAX);
             set.sets[col] += val;
