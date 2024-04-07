@@ -30,7 +30,7 @@ void solve(const day_t *day, part_t part) {
     func = (solve_func)symbol;
     result = func(day->input);
 
-    if (result.len == 0 && result.ptr != NULL) {
+    if (result.len == 0) {
         uintmax_t value = (uintmax_t)result.ptr;
         result.len = (size_t)snprintf(NULL, 0, "%ju", value);
         result.ptr = malloc(result.len + 1);
@@ -44,11 +44,14 @@ void solve(const day_t *day, part_t part) {
     }
 
 print:
-    fprintf(result.len == -1 ? stderr : stdout, "Part %u: %s", (unsigned int)part, result.ptr);
+    fprintf(result.len == -1 ? stderr : stdout, "Part %u: %s",
+            (unsigned int)part, result.ptr);
 
     if (result.len != -1 && day->app.check != LEAVE) {
         fputs(" \033[90m", stdout);
-        fputs(outcome_sym[(day->app.check == UPLOD ? upload : check)(day, part, result)], stdout);
+        fputs(outcome_sym[(day->app.check == UPLOD ? upload : check)(day, part,
+                                                                     result)],
+              stdout);
         fputs("\033[m", stdout);
     }
 
