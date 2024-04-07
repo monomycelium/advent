@@ -24,9 +24,7 @@ all: $(OBJECTS) caller
 	$(CXX) $(CXXFLAGS) -shared -fPIC -I$(CALLER) -o $@ $<
 
 %.so: %.zig
-	$(ZIG) build-lib $(ZIGFLAGS) -dynamic -lc -I$(CALLER) $<
-	@mv lib$(shell basename $@) $@
-	@rm lib$(shell basename $@).o
+	$(ZIG) build-lib $(ZIGFLAGS) -dynamic -lc -I$(CALLER) $< -femit-bin=$@
 
 .PHONY: caller
 caller: $(wildcard $(CALLER)/*.c)

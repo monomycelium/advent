@@ -242,11 +242,11 @@ const Test: type = struct {
 };
 
 fn solve(input: c.buf_t, n: usize, callback: Callback) c.buf_t {
-    var ret: c.buf_t = .{ .ptr = null, .len = 0 };
+    const ret: c.buf_t = .{ .ptr = null, .len = -1 };
 
     var buf: []u8 = undefined;
     buf.ptr = input.ptr orelse return ret;
-    buf.len = input.len;
+    buf.len = @intCast(input.len);
 
     var state: State = State.parse(buf, std.heap.raw_c_allocator) catch |e| {
         std.log.err("failed to parse input: {any}", .{e});
@@ -260,8 +260,7 @@ fn solve(input: c.buf_t, n: usize, callback: Callback) c.buf_t {
     // std.debug.print("\n", .{});
 
     mem.sort(Monkey, state.monkeys, void{}, Monkey.lessThanFn);
-    const num: []u8 = strFromInt(state.monkeys[0].count * state.monkeys[1].count, std.heap.raw_c_allocator) catch return ret;
-    return .{ .ptr = num.ptr, .len = num.len };
+    return .{ .len = 0, .ptr = @ptrFromInt(state.monkeys[0].count * state.monkeys[1].count) };
 }
 
 fn strFromInt(value: anytype, allocator: mem.Allocator) ![]u8 {

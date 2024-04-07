@@ -64,18 +64,17 @@ const part_b = struct {
 
 fn solver(buf: common.buf_t, func: *const fn (reader: anytype) ?usize) common.buf_t {
     var buffer: []u8 = undefined;
-    buffer.len = buf.len;
+    buffer.len = @intCast(buf.len);
     buffer.ptr = buf.ptr;
 
     var stream = std.io.fixedBufferStream(buffer);
     var reader = stream.reader();
 
-    const result: usize = func(reader) orelse return common.buf_t{ .ptr = null, .len = 0 };
-    const bytes = strFromInt(result, std.heap.raw_c_allocator) catch return common.buf_t{ .ptr = null, .len = 0 };
+    const result: usize = func(reader) orelse return common.buf_t{ .ptr = null, .len = -1 };
 
     return common.buf_t{
-        .ptr = @ptrCast(bytes),
-        .len = bytes.len,
+        .len = 0,
+        .ptr = @ptrFromInt(result),
     };
 }
 
@@ -85,16 +84,6 @@ export fn solve1(buf: common.buf_t) callconv(.C) common.buf_t {
 
 export fn solve2(buf: common.buf_t) callconv(.C) common.buf_t {
     return solver(buf, part_b.solve);
-}
-
-// std.fmt.formatIntBuf(out_buf: []u8, value: anytype, base: u8, case: Case, options: FormatOptions)
-
-fn strFromInt(value: anytype, allocator: std.mem.Allocator) ![]u8 {
-    var buf: []u8 = try allocator.alloc(u8, std.math.log10(std.math.maxInt(@TypeOf(value))) + 1);
-    const u: usize = std.fmt.formatIntBuf(buf, value, 10, .lower, .{ .alignment = .left });
-
-    buf[u] = 0;
-    return try allocator.realloc(buf, u + 1);
 }
 
 test "part a: contains" {

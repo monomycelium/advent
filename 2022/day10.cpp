@@ -152,6 +152,7 @@ static void solve(State *self, buf_t input,
     uintmax_t line; /**< line number */
 
     ptr = input.ptr;
+    line = 0;
     while ((sub = strspl(input, '\n', &ptr)).ptr != NULL) {
         Exe exec;
 
@@ -288,13 +289,5 @@ static void exec_exe(State *self, Exe exe, void (*inc_fn)(State *, uintmax_t)) {
 }
 
 static buf_t strfrommax(uintmax_t max) {
-    buf_t ptr;
-    std::string str;
-
-    str = std::to_string(max);
-
-    ptr.len = str.length();
-    ptr.ptr = (uint8_t *)strndup(&str[0], ptr.len);
-
-    return ptr;
+    return (buf_t){.len = 0, .ptr = (uint8_t *)max};
 }

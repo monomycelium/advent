@@ -21,6 +21,7 @@ void solve(const day_t *day, part_t part) {
 
     symbol = dlsym(day->handle, symbol_name(part));
     if ((errorstr = dlerror()) != NULL) {
+        result.len = -1;
         result.ptr = (uint8_t *)errorstr;
         symbol = NULL;
         goto print;
@@ -35,7 +36,7 @@ void solve(const day_t *day, part_t part) {
         result.ptr = malloc(result.len + 1);
 
         if (result.ptr == NULL) {
-            result.len = 0;
+            result.len = -1;
             goto print;
         }
 
@@ -43,19 +44,15 @@ void solve(const day_t *day, part_t part) {
     }
 
 print:
-    printf("Part %u: %s ", (unsigned int)part, result.ptr);
-    fputs("\033[90m", stdout);
+    fprintf(result.len == -1 ? stderr : stdout, "Part %u: %s", (unsigned int)part, result.ptr);
 
-    if (symbol != NULL) {
-        if (day->app.check != LEAVE)
-            fputs(outcome_sym[(day->app.check == UPLOD ? upload : check)(
-                      day, part, result)],
-                  stdout);
-
-        free(result.ptr);
+    if (result.len != -1 && day->app.check != LEAVE) {
+        fputs(" \033[90m", stdout);
+        fputs(outcome_sym[(day->app.check == UPLOD ? upload : check)(day, part, result)], stdout);
+        fputs("\033[m", stdout);
     }
 
-    fputs("\033[m", stdout);
+    if (symbol != NULL) free(result.ptr);
     putchar('\n');
 }
 

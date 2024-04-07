@@ -257,11 +257,4 @@ bool Cor::operator==(const Cor &c) const {
     return this->x == c.x && this->y == c.y;
 }
 
-static buf_t bfromi(size_t i) {
-    buf_t ret;
-    std::string result = std::to_string(i);
-
-    ret.len = result.length();
-    ret.ptr = (uint8_t *)strndup(&result[0], ret.len);
-    return ret;
-}
+static buf_t bfromi(size_t i) { return (buf_t){.len = 0, .ptr = (uint8_t *)i}; }

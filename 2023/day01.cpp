@@ -6,8 +6,7 @@
 #include <limits>
 #include <string>
 
-#include "common.h"  // TODO: provide function to print uintmax_t to malloc'ed
-                     // string in base-10.
+#include "common.h"
 
 extern "C" const uint8_t day = 01;
 extern "C" const uint16_t year = 2023;
@@ -22,7 +21,6 @@ typedef uint8_t (*digit_func)(bool, uint8_t *);
 buf_t solver(buf_t input, digit_func func);
 DigitResult func1(bool rev, uint8_t *ptr);
 DigitResult func2(bool rev, uint8_t *ptr);
-static buf_t umax_to_string(const uintmax_t v);
 
 DigitResult func1(bool rev, uint8_t *ptr) {  // gets first or last numeric digit
     int8_t inc = rev ? -1 : 1;

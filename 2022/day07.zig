@@ -305,7 +305,7 @@ fn solver(
     solve: *const fn (tree: *FsTree) @typeInfo(@typeInfo(@TypeOf(Part2.solve)).Fn.return_type.?).ErrorUnion.error_set!usize,
 ) common.buf_t {
     var buffer: []u8 = undefined;
-    buffer.len = buf.len;
+    buffer.len = @intCast(buf.len);
     buffer.ptr = buf.ptr;
 
     var stream = std.io.fixedBufferStream(buffer);
@@ -313,18 +313,17 @@ fn solver(
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     var alloc = gpa.allocator();
 
-    var bytes: []u8 = undefined;
-    var out = common.buf_t{ .ptr = null, .len = 0 };
+    var out = common.buf_t{ .ptr = null, .len = -1 };
 
     if (tree_g == null) tree_g = FsTree.parse(reader, &alloc) catch |e| {
         std.log.err("{}", .{e});
         return out;
     };
 
-    var result: usize = solve(&tree_g.?) catch return out;
-    bytes = strFromInt(result, std.heap.raw_c_allocator) catch return out;
-    out.ptr = bytes.ptr;
-    out.len = bytes.len;
+    const result: usize = solve(&tree_g.?) catch return out;
+    out.ptr = @ptrFromInt(result);
+    out.len = 0;
+
     return out;
 }
 
@@ -337,12 +336,4 @@ export fn solve2(buf: common.buf_t) callconv(.C) common.buf_t {
     tree_g.?.deinit();
     tree_g = null;
     return res;
-}
-
-fn strFromInt(value: anytype, allocator: std.mem.Allocator) ![]u8 {
-    var buf: []u8 = try allocator.alloc(u8, std.math.log10(std.math.maxInt(@TypeOf(value))) + 1);
-    const u: usize = std.fmt.formatIntBuf(buf, value, 10, .lower, .{ .alignment = .left });
-
-    buf[u] = 0;
-    return try allocator.realloc(buf, u + 1);
 }

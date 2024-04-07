@@ -169,7 +169,7 @@ pub fn read_file(reader: anytype, allocator: *std.mem.Allocator, exec_callback: 
 
 fn solver(buf: common.buf_t, func: *const fn (*Ship, Instruction) std.mem.Allocator.Error!void) common.buf_t {
     var buffer: []u8 = undefined;
-    buffer.len = buf.len;
+    buffer.len = @intCast(buf.len);
     buffer.ptr = buf.ptr;
 
     var stream = std.io.fixedBufferStream(buffer);
@@ -177,7 +177,7 @@ fn solver(buf: common.buf_t, func: *const fn (*Ship, Instruction) std.mem.Alloca
     var alloc = std.heap.raw_c_allocator;
 
     var bytes: []u8 = undefined;
-    var out = common.buf_t{ .ptr = null, .len = 0 };
+    var out = common.buf_t{ .ptr = null, .len = -1 };
 
     var result: STACK = read_file(reader, &alloc, func) catch |e| {
         std.log.err("{}", .{e});
@@ -187,7 +187,8 @@ fn solver(buf: common.buf_t, func: *const fn (*Ship, Instruction) std.mem.Alloca
     result.append(0) catch return out;
     bytes = result.toOwnedSlice() catch return out;
     out.ptr = bytes.ptr;
-    out.len = bytes.len;
+    out.len = @intCast(bytes.len);
+
     return out;
 }
 

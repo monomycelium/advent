@@ -1,14 +1,14 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include <stddef.h>
 #include <stdint.h>
+#include <sys/types.h>
 
 /**
  * Heap-allocated buffer.
  */
 typedef struct buf {
-    size_t len;   /**< Length of data. */
+    ssize_t len;  /**< Length of data. */
     uint8_t *ptr; /**< Pointer to null-terminated data. */
 } buf_t;
 

@@ -226,18 +226,7 @@ bool Grid::valid(Coord coord) const {
            coord.x >= 0 && coord.y >= 0;
 }
 
-static buf_t bfromi(size_t i) {
-    buf_t ret;
-    std::string result = std::to_string(i);
-
-    ret.len = result.length();
-    ret.ptr = (std::uint8_t *)std::malloc(ret.len + 1);
-
-    std::memcpy(ret.ptr, &result[0], ret.len);
-    ret.ptr[ret.len] = '\0';
-
-    return ret;
-}
+static buf_t bfromi(size_t i) { return (buf_t){.len = 0, .ptr = (uint8_t *)i}; }
 
 std::size_t Grid::size() const { return this->limits.x * this->limits.y; }
 

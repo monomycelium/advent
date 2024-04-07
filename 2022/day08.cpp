@@ -81,7 +81,7 @@ extern "C" buf_t solve1(buf_t input) {
     std::string str;                /**< result as string */
     buf_t result;                   /**< result as buf_t */
 
-    result.len = 0;
+    result.len = -1;
     result.ptr = NULL;
 
     grid = Grid(input);
@@ -139,10 +139,8 @@ extern "C" buf_t solve1(buf_t input) {
         }
     }
 
-    str = std::to_string(bitset.count());
-
-    result.len = str.length();
-    result.ptr = strdup(str.c_str());
+    result.ptr = (uint8_t *)bitset.count();
+    result.len = 0;
 
     return result;
 }
@@ -153,7 +151,7 @@ extern "C" buf_t solve2(buf_t input) {
     std::string str; /**< result as string */
     buf_t result;    /**< result as buf_t */
 
-    result.len = 0;
+    result.len = -1;
     result.ptr = NULL;
 
     max = 0;
@@ -164,10 +162,8 @@ extern "C" buf_t solve2(buf_t input) {
         for (size_t col = 0; col < grid.width; col++)
             max = std::max(max, grid.scenic_score(row, col));
 
-    str = std::to_string(max);
-
-    result.len = str.length();
-    result.ptr = strdup(str.c_str());
+    result.ptr = (uint8_t *)max;
+    result.len = 0;
 
     return result;
 }

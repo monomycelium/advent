@@ -41,16 +41,15 @@ pub fn packet_start(stream: []const u8, length: usize) ?usize {
 
 fn solver(buf: common.buf_t, length: usize) common.buf_t {
     var stream: []u8 = undefined;
-    var result = common.buf_t{ .ptr = null, .len = 0 };
+    var result = common.buf_t{ .ptr = null, .len = -1 };
 
-    stream.len = buf.len;
+    stream.len = @intCast(buf.len);
     stream.ptr = buf.ptr;
 
     const r: usize = packet_start(stream, length) orelse return result;
-    const x: []u8 = strFromInt(r, std.heap.raw_c_allocator) catch return result;
+    result.ptr = @ptrFromInt(r);
+    result.len = 0;
 
-    result.ptr = x.ptr;
-    result.len = x.len;
     return result;
 }
 
@@ -60,14 +59,6 @@ export fn solve1(buf: common.buf_t) callconv(.C) common.buf_t {
 
 export fn solve2(buf: common.buf_t) callconv(.C) common.buf_t {
     return solver(buf, START_MESSAGE_MARKER_LEN);
-}
-
-fn strFromInt(value: anytype, allocator: std.mem.Allocator) ![]u8 {
-    var buf: []u8 = try allocator.alloc(u8, std.math.log10(std.math.maxInt(@TypeOf(value))) + 1);
-    const u: usize = std.fmt.formatIntBuf(buf, value, 10, .lower, .{ .alignment = .left });
-
-    buf[u] = 0;
-    return try allocator.realloc(buf, u + 1);
 }
 
 test "packet_start" {
