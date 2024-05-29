@@ -63,8 +63,7 @@ extern "C" buf_t solve1(buf_t input) {
                         uint8_t *p = grid.at(addr);
 
                         for (; p != nullptr && std::isdigit(*p);
-                             addr.x--, p = grid.at(addr))
-                            ;
+                             addr.x--, p = grid.at(addr));
                         if (addr.x == c.x + j) continue;
 
                         addr.x += 1;
@@ -92,8 +91,7 @@ extern "C" buf_t solve2(buf_t input) {
                         uint8_t *p = grid.at(addr);
 
                         for (; p != nullptr && std::isdigit(*p);
-                             addr.x--, p = grid.at(addr))
-                            ;
+                             addr.x--, p = grid.at(addr));
                         if (addr.x == c.x + j) continue;
 
                         addr.x += 1;

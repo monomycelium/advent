@@ -2,6 +2,7 @@
 .fseventsd
 .Spotlight-V100
 
+input
 input.txt
 .cookie
 caller/caller
@@ -17,6 +18,7 @@ Cargo.lock
 .clang-format
 
 .vscode/
+.cache/
 
 zig-cache/
 zig-out/

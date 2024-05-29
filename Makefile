@@ -1,7 +1,7 @@
 export CC = cc
 export CXX = c++
 export ZIG = zig
-override CFLAGS += -Wall -Wextra -fshort-enums -std=gnu2x
+override CFLAGS += -Wall -Wextra -fshort-enums -std=gnu23
 override CXXFLAGS += -Wall -Wextra -fshort-enums -std=gnu++23
 
 CALLER = caller
